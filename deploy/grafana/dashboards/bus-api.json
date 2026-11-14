@@ -1,0 +1,540 @@
+{
+  "uid": "bus-api",
+  "title": "Bus Booking API - live health",
+  "tags": [
+    "bus-booking"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5s",
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "editable": true,
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "API",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "up{job=\"bus-api\"}",
+          "legendFormat": "",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "UP",
+                  "color": "green",
+                  "index": 0
+                },
+                "0": {
+                  "text": "DOWN",
+                  "color": "red",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Database (as seen by the API)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 4,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "app_database_up",
+          "legendFormat": "",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "UP",
+                  "color": "green",
+                  "index": 0
+                },
+                "0": {
+                  "text": "DOWN",
+                  "color": "red",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Running version",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 9,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "app_info",
+          "legendFormat": "{{version}}",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "name",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Double-bookings blocked (total)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 14,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(bookings_total{outcome=\"seat_conflict\"}) or vector(0)",
+          "legendFormat": "",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Bookings confirmed (total)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 19,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(bookings_total{outcome=\"confirmed\"}) or vector(0)",
+          "legendFormat": "",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Requests per second, by HTTP status",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (status) (rate(http_requests_total[1m]))",
+          "legendFormat": "{{status}}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Slowest 5% of requests (p95 latency)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket[1m])))",
+          "legendFormat": "p95",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Booking outcomes per minute",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (outcome) (increase(bookings_total[1m]))",
+          "legendFormat": "{{outcome}}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "drawStyle": "bars",
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Is the API reachable? (1 = yes)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "up{job=\"bus-api\"}",
+          "legendFormat": "api",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      }
+    }
+  ]
+}

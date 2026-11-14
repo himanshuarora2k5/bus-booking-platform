@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 5s        # ask the app for its numbers every 5 seconds
+  evaluation_interval: 5s    # re-check the alarm rules every 5 seconds
+
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+scrape_configs:
+  - job_name: bus-api
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["app:8000"]   # over the private network, not through the public front door

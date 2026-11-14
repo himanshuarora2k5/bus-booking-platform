@@ -1,0 +1,29 @@
+groups:
+  - name: bus-api
+    rules:
+      - alert: ApiDown
+        expr: up{job="bus-api"} == 0
+        for: 10s
+        labels:
+          severity: critical
+        annotations:
+          summary: "The API is not answering"
+          runbook: "docs/RUNBOOK.md#api-down"
+
+      - alert: DatabaseDown
+        expr: app_database_up == 0
+        for: 10s
+        labels:
+          severity: critical
+        annotations:
+          summary: "The API is running but cannot reach its database"
+          runbook: "docs/RUNBOOK.md#database-down"
+
+      - alert: HighServerErrorRate
+        expr: sum(rate(http_requests_total{status=~"5.."}[1m])) > 0.5
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "More than one server error every two seconds"
+          runbook: "docs/RUNBOOK.md#high-error-rate"

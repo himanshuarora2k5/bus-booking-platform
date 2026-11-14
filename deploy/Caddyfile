@@ -1,0 +1,34 @@
+# Caddy is the front door. It terminates HTTPS and forwards traffic to the app.
+#  - SITE_ADDRESS=localhost            -> Caddy makes its own local certificate (browser shows a warning)
+#  - SITE_ADDRESS=myname.region.cloudapp.azure.com -> Caddy fetches a real, trusted certificate by itself
+
+{$SITE_ADDRESS:localhost} {
+	encode zstd gzip
+
+	# HSTS tells browsers to ALWAYS use HTTPS for this name. Only send it for real public names,
+	# never for localhost (it would make the browser force HTTPS on your other local pages).
+	@public not host localhost 127.0.0.1
+	header @public Strict-Transport-Security "max-age=31536000"
+
+	header {
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+
+	# The metrics page is for Prometheus only (private network). Never show it to the internet.
+	@private path /metrics /metrics/*
+	respond @private 404
+
+	reverse_proxy {$UPSTREAM:app:8000} {
+		# During a restart, wait up to 5 seconds instead of failing the visitor straight away.
+		lb_try_duration 5s
+		lb_try_interval 250ms
+	}
+
+	log {
+		output stdout
+		format json
+	}
+}

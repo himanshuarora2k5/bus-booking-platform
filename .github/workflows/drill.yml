@@ -1,0 +1,41 @@
+name: Proof drill (manual)
+
+# Starts the whole stack on a fresh GitHub machine and runs the proof drill against it.
+# Run it by hand: GitHub -> Actions -> "Proof drill (manual)" -> Run workflow.
+# The evidence (report + log) is attached to the run as a downloadable artifact.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  drill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Create throwaway settings (these values exist only for this run)
+        run: |
+          {
+            echo "POSTGRES_USER=ci"
+            echo "POSTGRES_PASSWORD=$(openssl rand -hex 12)"
+            echo "POSTGRES_DB=busdb"
+            echo "GRAFANA_PASSWORD=$(openssl rand -hex 12)"
+            echo "SITE_ADDRESS=localhost"
+            echo "HTTP_PORT=8080"
+            echo "HTTPS_PORT=8443"
+          } > .env
+      - name: Deploy version ci-baseline
+        run: bash scripts/deploy.sh ci-baseline
+      - name: Run the proof drill
+        run: python3 scripts/drill.py
+      - name: Show the report in the run summary
+        if: always()
+        run: cat evidence/LATEST.md >> "$GITHUB_STEP_SUMMARY" || true
+      - name: Keep the evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: drill-evidence
+          path: evidence/

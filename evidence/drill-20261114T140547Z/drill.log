@@ -1,0 +1,56 @@
+14:05:48  PROOF DRILL against http://127.0.0.1:8000  (commit )
+14:05:48  9 scenarios. Nothing is faked: every step really breaks and repairs the system.
+14:05:48  
+14:05:48  STEP 1/9 - Service healthy before we start
+14:05:48      /health/live = 200, /health/ready = 200, database up, running version `drill-20261114T135618Z-good`
+14:05:48      => PASS (0.0s)
+14:05:48  
+14:05:48  STEP 2/9 - HTTPS front door works, /metrics is hidden
+14:05:48      HTTPS `https://localhost:8443/health/ready` = 200
+14:05:48      `/metrics` through the front door = 404 (hidden from the public)
+14:05:48      local certificate (made by the proxy itself, so browsers warn about it)
+14:05:48      => PASS (0.0s)
+14:05:48  
+14:05:48  STEP 3/9 - Many people grab the SAME seat at once
+14:05:50      50 clients tried to book seat 5B on trip 1 at the same instant
+14:05:50      result: 1 x HTTP 201 (winner, PNR WPMLJ38SGN), 49 x HTTP 409 (clean 'seat taken')
+14:05:50      database check: 1 new booking, 1 confirmed ticket for that seat (no duplicate PNR)
+14:05:50      response time: median 332 ms, slowest 470 ms
+14:05:50      => PASS (2.0s)
+14:05:50  
+14:05:50  STEP 4/9 - Cancelling frees the seat for someone else
+14:05:50      cancelled WPMLJ38SGN, seat 5B became free, rebooked as new PNR WTH3EM7686
+14:05:50      => PASS (0.0s)
+14:05:50  
+14:05:50  STEP 5/9 - Database dies: detection, alert, recovery
+14:05:50      database stopped on purpose ...
+14:06:06      database container stopped; `/health/ready` turned 503 after 2.0s while `/health/live` stayed 200
+14:06:06      a booking attempt during the outage got a clean HTTP 503 (no crash, no wrong data)
+14:06:06      Prometheus alert `DatabaseDown` was FIRING 14.6s after the failure
+14:06:06      database started again; service ready after 0.9s with NO restart of the app
+14:06:06      data intact: booking WTH3EM7686 is still there (CONFIRMED)
+14:06:06      => PASS (16.8s)
+14:06:06  
+14:06:06  STEP 6/9 - Backup, total data loss, restore
+14:06:12      all bookings deleted on purpose; restoring from backup ...
+14:06:19      backup `backups/busdb-20261114T140606Z.sql.gz` (5 KB), gzip test and SHA-256 fingerprint OK
+14:06:19      verification: a fresh backup restored into a SCRATCH database matched the live data exactly
+14:06:19      disaster: every booking deleted (booking WTH3EM7686 returned 404)
+14:06:19      restore from backup took 6.9s; booking WTH3EM7686 is back (CONFIRMED)
+14:06:19      => PASS (12.2s)
+14:06:19  
+14:06:19  STEP 7/9 - A normal release goes live
+14:06:33      deployed version `drill-20261114T140547Z-good`: built, started, passed the health gate and went live
+14:06:33      => PASS (14.6s)
+14:06:33  
+14:06:33  STEP 8/9 - A broken release is rolled back automatically
+14:06:33      shipping a deliberately broken release `drill-20261114T140547Z-bad` ...
+14:07:09      broken release `drill-20261114T140547Z-bad` started but never became ready within the 25s health gate
+14:07:09      automatic rollback: `drill-20261114T140547Z-good` is serving traffic again (HTTP 200)
+14:07:09      deploy history is in `.deploy/history.log`
+14:07:09      => PASS (35.8s)
+14:07:09  
+14:07:09  STEP 9/9 - App crashes: Docker restarts it by itself
+14:07:10      app process terminated on purpose ...
+14:07:13      app process terminated; Docker restarted the container by itself (restart count 0 -> 1) and the service became ready after 2.4s
+14:07:13      => PASS (3.7s)

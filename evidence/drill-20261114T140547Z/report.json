@@ -1,0 +1,106 @@
+{
+  "facts": {
+    "date_utc": "2026-11-14 14:05:47 UTC",
+    "git_commit": "",
+    "host": "Linux 6.18.58.1-microsoft-standard-WSL2 (DESKTOP-1LA88PP)",
+    "docker": "Docker version 29.9.3, build 5457199",
+    "target": "http://127.0.0.1:8000"
+  },
+  "results": [
+    {
+      "id": "preflight",
+      "title": "Service healthy before we start",
+      "ok": true,
+      "seconds": 0.0,
+      "details": [
+        "/health/live = 200, /health/ready = 200, database up, running version `drill-20261114T135618Z-good`"
+      ]
+    },
+    {
+      "id": "front-door",
+      "title": "HTTPS front door works, /metrics is hidden",
+      "ok": true,
+      "seconds": 0.0,
+      "details": [
+        "HTTPS `https://localhost:8443/health/ready` = 200",
+        "`/metrics` through the front door = 404 (hidden from the public)",
+        "local certificate (made by the proxy itself, so browsers warn about it)"
+      ]
+    },
+    {
+      "id": "race",
+      "title": "Many people grab the SAME seat at once",
+      "ok": true,
+      "seconds": 2.0,
+      "details": [
+        "50 clients tried to book seat 5B on trip 1 at the same instant",
+        "result: 1 x HTTP 201 (winner, PNR WPMLJ38SGN), 49 x HTTP 409 (clean 'seat taken')",
+        "database check: 1 new booking, 1 confirmed ticket for that seat (no duplicate PNR)",
+        "response time: median 332 ms, slowest 470 ms"
+      ]
+    },
+    {
+      "id": "cancel-rebook",
+      "title": "Cancelling frees the seat for someone else",
+      "ok": true,
+      "seconds": 0.0,
+      "details": [
+        "cancelled WPMLJ38SGN, seat 5B became free, rebooked as new PNR WTH3EM7686"
+      ]
+    },
+    {
+      "id": "db-outage",
+      "title": "Database dies: detection, alert, recovery",
+      "ok": true,
+      "seconds": 16.8,
+      "details": [
+        "database container stopped; `/health/ready` turned 503 after 2.0s while `/health/live` stayed 200",
+        "a booking attempt during the outage got a clean HTTP 503 (no crash, no wrong data)",
+        "Prometheus alert `DatabaseDown` was FIRING 14.6s after the failure",
+        "database started again; service ready after 0.9s with NO restart of the app",
+        "data intact: booking WTH3EM7686 is still there (CONFIRMED)"
+      ]
+    },
+    {
+      "id": "backup-restore",
+      "title": "Backup, total data loss, restore",
+      "ok": true,
+      "seconds": 12.2,
+      "details": [
+        "backup `backups/busdb-20261114T140606Z.sql.gz` (5 KB), gzip test and SHA-256 fingerprint OK",
+        "verification: a fresh backup restored into a SCRATCH database matched the live data exactly",
+        "disaster: every booking deleted (booking WTH3EM7686 returned 404)",
+        "restore from backup took 6.9s; booking WTH3EM7686 is back (CONFIRMED)"
+      ]
+    },
+    {
+      "id": "good-release",
+      "title": "A normal release goes live",
+      "ok": true,
+      "seconds": 14.6,
+      "details": [
+        "deployed version `drill-20261114T140547Z-good`: built, started, passed the health gate and went live"
+      ]
+    },
+    {
+      "id": "bad-release",
+      "title": "A broken release is rolled back automatically",
+      "ok": true,
+      "seconds": 35.8,
+      "details": [
+        "broken release `drill-20261114T140547Z-bad` started but never became ready within the 25s health gate",
+        "automatic rollback: `drill-20261114T140547Z-good` is serving traffic again (HTTP 200)",
+        "deploy history is in `.deploy/history.log`"
+      ]
+    },
+    {
+      "id": "crash-restart",
+      "title": "App crashes: Docker restarts it by itself",
+      "ok": true,
+      "seconds": 3.7,
+      "details": [
+        "app process terminated; Docker restarted the container by itself (restart count 0 -> 1) and the service became ready after 2.4s"
+      ]
+    }
+  ]
+}
