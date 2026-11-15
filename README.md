@@ -8,13 +8,13 @@
 
 | Submission facts | |
 |---|---|
-| Repository | `TODO: https://github.com/<you>/bus-booking-platform` |
-| Branch / final commit | `main` / `TODO: commit id` |
-| Live demo | `TODO: https://<name>.<region>.cloudapp.azure.com` (or "local-only demo") |
-| CI run (green) | `TODO: link to the GitHub Actions run` |
-| Image tag / digest | `TODO: sha-xxxxxxx / sha256:...` (shown in the run summary) |
+| Repository | [himanshuarora2k5/bus-booking-platform](https://github.com/himanshuarora2k5/bus-booking-platform) |
+| Branch / final commit | `main` / See latest commit on GitHub |
+| Live demo | Local-only: `https://localhost:8443/docs` (no public cloud server deployed) |
+| CI run (green) | [Successful CI run #3](https://github.com/himanshuarora2k5/bus-booking-platform/actions/runs/43710844318) |
+| Image tag / digest | `sha-e098876` / See digest in successful CI run summary |
 | Drill evidence | [`evidence/LATEST.md`](evidence/LATEST.md) |
-| Demo video | `TODO: link` |
+| Demo video | Pending recording and upload |
 
 ## What is proven (and where)
 
@@ -44,7 +44,7 @@ flowchart LR
     reg -.->|"deploy.sh"| app
 ```
 
-Only the front door is public. The database has no published port. `/metrics` is blocked at the front door and
+The Caddy front door is the only published application entry point on the local host. The database has no published port. `/metrics` is blocked at the front door and
 only Prometheus (inside the private network) can read it. Prometheus and Grafana are bound to `127.0.0.1`.
 
 ## Reproduce it on a clean machine
@@ -52,7 +52,7 @@ only Prometheus (inside the private network) can read it. Prometheus and Grafana
 Requirements: Linux (or WSL on Windows), Docker with Compose, `git`, `curl`, `python3`.
 
 ```bash
-git clone https://github.com/<you>/bus-booking-platform.git
+git clone https://github.com/himanshuarora2k5/bus-booking-platform.git
 cd bus-booking-platform
 bash scripts/make_env.sh        # creates .env with random passwords (prints the dashboard password)
 bash scripts/deploy.sh v1       # builds, starts everything, checks health
@@ -119,7 +119,7 @@ Always release with the script. It builds the new version, starts it, and checks
 ```bash
 bash scripts/deploy.sh v2                              # normal release
 bash scripts/deploy.sh v3-bad --simulate-bad-release   # demo: shows the automatic rollback
-bash scripts/deploy.sh sha-1a2b3c4 --image ghcr.io/<you>/bus-booking-platform:sha-1a2b3c4   # use a CI-built image
+bash scripts/deploy.sh sha-1a2b3c4 --image ghcr.io/himanshuarora2k5/bus-booking-platform:sha-e098876   # use a CI-built image
 ```
 
 **Manual rollback** (for example if a release passes the health check but behaves badly):
@@ -133,7 +133,7 @@ bash scripts/backup.sh                       # compressed dump + SHA-256 fingerp
 bash scripts/verify_backup.sh                # restores a fresh backup into a scratch DB and compares data
 bash scripts/restore.sh backups/<file>.sql.gz   # REPLACES live data (asks you to type YES)
 ```
-On a server `bash infra/install-cron.sh` schedules a nightly backup and a weekly restore test.
+For a future server deployment, `bash infra/install-cron.sh` can schedule nightly backups and weekly restore tests. This was not enabled for this local demonstration.
 
 ## Observability
 
@@ -157,7 +157,7 @@ On a server `bash infra/install-cron.sh` schedules a nightly backup and a weekly
 app/            the API (FastAPI)            db/        schema.sql, seed.sql
 tests/          25 tests, real PostgreSQL    deploy/    Caddyfile, Prometheus, Grafana
 scripts/        deploy, backup, restore, verify_backup, drill, make_env, try_booking
-infra/          Azure server scripts         docs/      runbook, decisions
+infra/          Optional Azure scripts (not deployed)         docs/      runbook, decisions
 .github/        CI and manual drill workflows   evidence/  drill reports and screenshots
 ```
 
@@ -168,11 +168,12 @@ infra/          Azure server scripts         docs/      runbook, decisions
 - Alerts are visible in Prometheus/Grafana; no email/Slack delivery is configured.
 - The API has no user login (out of scope for this assessment); demo data is seeded automatically.
 - The schema is created idempotently at start-up; there is no migration tool.
-- Locally the HTTPS certificate is self-made, so browsers warn; on the public server it is a trusted certificate.
+- The local HTTPS certificate is self-signed, so browsers show a certificate warning. No public server or trusted public certificate was deployed for this submission.
 
 ## AI assistance disclosure
 
-`TODO (edit so it is true for you):` I used Anthropic's Claude as a pair-programmer and tutor to design the structure,
-draft code and scripts, and explain concepts. I ran every command, ran the tests and the drill myself, and can explain
-each file. Libraries: FastAPI, psycopg, prometheus-client (Python); PostgreSQL, Caddy, Prometheus, Grafana, Trivy,
-gitleaks, pip-audit (tools).
+I used Anthropic's Claude and OpenAI's ChatGPT as AI pair-programming assistants
+and tutors for design discussions, drafting, explanations and troubleshooting.
+I executed the commands, reviewed outputs, ran the tests and proof drills, and
+verified the application's behaviour. Libraries and tools: FastAPI, psycopg,
+prometheus-client, PostgreSQL, Caddy, Prometheus, Grafana, Trivy, gitleaks and pip-audit.
