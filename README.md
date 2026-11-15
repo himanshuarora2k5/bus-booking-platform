@@ -161,7 +161,7 @@ infra/          Optional Azure scripts (not deployed)         docs/      runbook
 .github/        CI and manual drill workflows   evidence/  drill reports and screenshots
 ```
 
-## Known limitations and assumptions (honest list)
+## Known limitations and assumptions
 
 - One server, one database: no high availability. Recovery is automatic restart + restore from backup.
 - Backups are stored on the same machine (copy them off-machine for real production use).
